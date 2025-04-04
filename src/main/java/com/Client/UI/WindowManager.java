@@ -1,5 +1,7 @@
 package com.Client.UI;
 import com.Client.Client;
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,9 +15,13 @@ public class WindowManager {
     JTextField newMessage = new JTextField("");
     JButton sendButton = new JButton("Send");
     Client client;
+    Color pink = new Color(240, 100, 210);
+    Color purple = new Color(150, 80, 220);
 
-    public WindowManager(Client _client) throws IOException, UnsupportedLookAndFeelException {
+    public WindowManager(Client _client) throws IOException {
         client = _client;
+        FlatDarkLaf.setup();
+        JFrame.setDefaultLookAndFeelDecorated(true);
         createWindow();
     }
 
@@ -49,7 +55,14 @@ public class WindowManager {
         JPanel newMessagePanel = new JPanel();
         newMessagePanel.setLayout(new BorderLayout());
         newMessage.setPreferredSize(new Dimension(500, 30));
+        newMessage.setBackground(new Color(50, 50, 50));
+        newMessage.setForeground(Color.WHITE);
+        newMessage.setCaretColor(Color.WHITE);
         newMessagePanel.add(newMessage, BorderLayout.CENTER);
+        sendButton.setOpaque(true);
+        sendButton.setBackground(pink);
+        sendButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        sendButton.setForeground(Color.BLACK);
         sendButton.addActionListener(e -> {
             try {
                 if(!newMessage.getText().isBlank()) {
@@ -78,8 +91,8 @@ public class WindowManager {
         // Options are inverted for some reason...
         String[] rooms = {"3", "2", "1"};
         JComboBox<String> combo = new JComboBox<>(rooms);
-        return rooms[rooms.length - 1 - JOptionPane.showOptionDialog(window, "Select a room", "", JOptionPane.DEFAULT_OPTION,
-        JOptionPane.QUESTION_MESSAGE, null, rooms, 2)];
+        return String.valueOf(3 - JOptionPane.showOptionDialog(window, "Select a room", "", JOptionPane.DEFAULT_OPTION,
+        JOptionPane.QUESTION_MESSAGE, null, rooms, 0));
     }
 
     public void addOtherMessage(String username, String message) {
@@ -88,14 +101,15 @@ public class WindowManager {
         JPanel panel = new RoundedPanel(15);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        panel.setBackground(new Color(119, 252, 123));
+        panel.setBackground(pink);
+        panel.setForeground(Color.WHITE);
 
         JLabel usernameLabel = new JLabel(username);
         usernameLabel.setFont(new Font("Arial", Font.PLAIN, 15));
         usernameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(usernameLabel);
 
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(Box.createRigidArea(new Dimension(10, 10)));
         JLabel messageLabel = new JLabel(message);
         messageLabel.setFont(new Font("Arial", Font.PLAIN, 20));
         messageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -124,9 +138,9 @@ public class WindowManager {
         JPanel panel = new RoundedPanel(15);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        panel.setBackground(new Color(50, 152, 253));
+        panel.setBackground(purple);
 
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(Box.createRigidArea(new Dimension(10, 10)));
         JLabel messageLabel = new JLabel(message);
         messageLabel.setFont(new Font("Arial", Font.PLAIN, 20));
         messageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);

@@ -40,17 +40,16 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
+        System.setProperty( "apple.awt.application.appearance", "system" );
         Client client = new Client();
         client.username = client.windowManager.getUsername();
         String roomNum = client.windowManager.getRoom();
         System.out.println(roomNum);
-        while(!"012".contains(roomNum)) {
+        while(!"123".contains(roomNum)) {
             roomNum = client.windowManager.getRoom();
         }
         client.windowManager.window.setTitle("Room " + roomNum);
         client.startConnection("127.0.0.1", 3744);
-        client.con.sendMessage(roomNum);
+        client.con.sendMessage(String.valueOf(Integer.parseInt(roomNum)-1));
     }
-
-
 }

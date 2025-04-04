@@ -1,12 +1,10 @@
 package com.Server;
 
-import com.Client.Client;
 import com.common.Connection;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.SocketException;
-import java.sql.SQLOutput;
 import java.util.*;
 
 import static java.lang.Thread.sleep;
@@ -59,7 +57,6 @@ public class Server {
                             if (otherClient != client) {
 
                                 try {
-                                    System.out.println("the fuck");
                                     otherClient.sendMessage(message);
                                 } catch(SocketException e) {
                                     disconnected.add(otherClient);
