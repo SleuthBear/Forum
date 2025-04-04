@@ -19,6 +19,7 @@ public class Client {
             try {
                 while(true) {
                     if (con.getMessage() == 1) {
+                        System.out.println("Received Message");
                         String fullMessage = con.pollMessage();
                         String user = fullMessage.split("%:%")[0];
                         String message = fullMessage.split("%:%")[1];
@@ -41,7 +42,14 @@ public class Client {
     public static void main(String[] args) throws IOException {
         Client client = new Client();
         client.username = client.windowManager.getUsername();
+        String roomNum = client.windowManager.getRoom();
+        System.out.println(roomNum);
+        while(!"012".contains(roomNum)) {
+            roomNum = client.windowManager.getRoom();
+        }
+        client.windowManager.window.setTitle("Room " + roomNum);
         client.startConnection("127.0.0.1", 3744);
+        client.con.sendMessage(roomNum);
     }
 
 

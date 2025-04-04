@@ -16,6 +16,9 @@ public class Connection {
     public int bytesToRead = 0;
     public int bytesRead = 0;
 
+    public int room;
+    public boolean connected = false;
+
     // Server-side initializer
     public Connection(ServerSocket serverSocket) throws IOException {
         socket = serverSocket.accept();

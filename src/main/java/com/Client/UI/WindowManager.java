@@ -2,20 +2,19 @@ package com.Client.UI;
 import com.Client.Client;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 public class WindowManager {
-    JFrame window;
+    public JFrame window;
     JPanel messagePanel;
     JTextField newMessage = new JTextField("");
     JButton sendButton = new JButton("Send");
     Client client;
 
-    public WindowManager(Client _client) throws IOException {
+    public WindowManager(Client _client) throws IOException, UnsupportedLookAndFeelException {
         client = _client;
         createWindow();
     }
@@ -73,6 +72,14 @@ public class WindowManager {
         String username = JOptionPane.showInputDialog(window,
                 "What is your name?", null);
         return username;
+    }
+
+    public String getRoom() throws IOException {
+        // Options are inverted for some reason...
+        String[] rooms = {"3", "2", "1"};
+        JComboBox<String> combo = new JComboBox<>(rooms);
+        return rooms[rooms.length - 1 - JOptionPane.showOptionDialog(window, "Select a room", "", JOptionPane.DEFAULT_OPTION,
+        JOptionPane.QUESTION_MESSAGE, null, rooms, 2)];
     }
 
     public void addOtherMessage(String username, String message) {
