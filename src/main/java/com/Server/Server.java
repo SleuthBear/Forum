@@ -2,20 +2,23 @@ package com.Server;
 
 import com.common.Connection;
 
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static java.lang.Thread.sleep;
-
 public class Server {
     int nRooms = 3;
-    ServerSocket serverSocket;
+    SSLServerSocket serverSocket;
     private List<List<Connection>> rooms = new ArrayList<>();
     private ExecutorService pool = Executors.newFixedThreadPool(nRooms);
+    // TLS Details
+    public static final String[] protocols = new String[]{"TLSv1.3"};
+    public static final String[] cipherSuites = new String[]{"TLS_AES_128_GCM_SHA256"};
 
     public void start(int port) throws IOException, InterruptedException {
 
@@ -25,7 +28,11 @@ public class Server {
             rooms.add(newRoom);
         }
 
-        serverSocket = new ServerSocket(port);
+        SSLServerSocketFactory socketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        serverSocket = (SSLServerSocket) socketFactory.createServerSocket(port);
+        serverSocket.setEnabledProtocols(protocols);
+        serverSocket.setEnabledCipherSuites(cipherSuites);
+
         NewConnectionThread connectionThread = new NewConnectionThread(serverSocket, rooms);
         connectionThread.start();
 

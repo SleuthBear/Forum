@@ -1,11 +1,17 @@
 package com.common;
 
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import static com.Server.Server.cipherSuites;
+import static com.Server.Server.protocols;
+
 public class Connection {
-    private Socket socket;
+    private SSLSocket socket;
     private InputStream iByteStream;
     private Reader iCharStream;
     private OutputStream oStream; // This stream blocks, because not really an issue.
@@ -16,12 +22,9 @@ public class Connection {
     public int bytesToRead = 0;
     public int bytesRead = 0;
 
-    public int room;
-    public boolean connected = false;
-
     // Server-side initializer
-    public Connection(ServerSocket serverSocket) throws IOException {
-        socket = serverSocket.accept();
+    public Connection(SSLServerSocket serverSocket) throws IOException {
+        socket = (SSLSocket) serverSocket.accept();
         oStream = socket.getOutputStream();
         iByteStream = socket.getInputStream();
         iCharStream = new InputStreamReader(iByteStream, "UTF-8");
@@ -29,7 +32,11 @@ public class Connection {
 
     // Client-side initializer
     public Connection(String ip, int port) throws IOException {
-        socket = new Socket(ip, port);
+        SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        socket = (SSLSocket) socketFactory.createSocket(ip, port);
+        socket.setEnabledProtocols(protocols);
+        socket.setEnabledCipherSuites(cipherSuites);
+        socket.startHandshake();
         oStream = socket.getOutputStream();
         iByteStream = socket.getInputStream();
         iCharStream = new InputStreamReader(iByteStream, "UTF-8");

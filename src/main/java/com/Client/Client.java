@@ -19,7 +19,6 @@ public class Client {
             try {
                 while(true) {
                     if (con.getMessage() == 1) {
-                        System.out.println("Received Message");
                         String fullMessage = con.pollMessage();
                         String user = fullMessage.split("%:%")[0];
                         String message = fullMessage.split("%:%")[1];
