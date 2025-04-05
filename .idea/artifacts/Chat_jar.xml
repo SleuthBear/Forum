@@ -6,6 +6,12 @@
         <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
       </element>
       <element id="module-output" name="Chat.main" />
+      <element id="library" level="project" name="Gradle: com.formdev:flatlaf:3.3" />
+      <element id="archive" name="flatlaf.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+        </element>
+      </element>
     </root>
   </artifact>
 </component>

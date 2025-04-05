@@ -6,77 +6,34 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static java.lang.Thread.sleep;
 
 public class Server {
+    int nRooms = 7;
     ServerSocket serverSocket;
-    private List<Connection> clients = Collections.synchronizedList(new ArrayList<>());
-    private List<String> roomNames = new ArrayList<>();
     private List<List<Connection>> rooms = new ArrayList<>();
+    private ExecutorService pool = Executors.newFixedThreadPool(nRooms);
 
     public void start(int port) throws IOException, InterruptedException {
 
-        // Create 3 seperate rooms
-        roomNames.add("Server 1");
-        roomNames.add("Server 2");
-        roomNames.add("Server 3");
-        rooms.add(Collections.synchronizedList(new ArrayList<>()));
-        rooms.add(Collections.synchronizedList(new ArrayList<>()));
-        rooms.add(Collections.synchronizedList(new ArrayList<>()));
+        // Require a reference to the rooms so we can later add back in.
+        for (int i = 0; i < nRooms; i++) {
+            final List<Connection> newRoom = Collections.synchronizedList(new ArrayList<>());
+            rooms.add(newRoom);
+        }
 
         serverSocket = new ServerSocket(port);
-        NewConnectionThread connectionThread = new NewConnectionThread(serverSocket, clients);
+        NewConnectionThread connectionThread = new NewConnectionThread(serverSocket, rooms);
         connectionThread.start();
 
-        // One thread per room maybe??
-
-        while(true) {
-
-            synchronized(clients) {
-                // Disconnected Clients
-                Set<Connection> disconnected = new HashSet<>();
-                for (Connection client : clients) {
-
-                    if (client.getMessage() == 1) {
-
-                        String message = client.pollMessage();
-                        System.out.println(message);
-
-                        // Client needs to be assigned to a room first.
-                        if(!client.connected) {
-
-                            client.connected = true;
-                            client.room = Integer.parseInt(message);
-                            rooms.get(client.room).add(client);
-                            break;
-                        }
-
-                        for (Connection otherClient : rooms.get(client.room)) {
-
-                            if (otherClient != client) {
-
-                                try {
-                                    otherClient.sendMessage(message);
-                                } catch(SocketException e) {
-                                    disconnected.add(otherClient);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if(!disconnected.isEmpty()) {
-                    for(Connection otherClient: disconnected) {
-                        otherClient.close();
-                        clients.remove(otherClient);
-                        rooms.get(otherClient.room).remove(otherClient);
-                    }
-                }
-            }
+        for (List<Connection> room : rooms) {
+            pool.submit(new RoomRunner(room));
         }
-    }
 
+    }
     public static void main(String[] args) throws IOException, InterruptedException {
         Server server = new Server();
         server.start( 3744);
