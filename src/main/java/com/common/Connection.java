@@ -11,7 +11,7 @@ public class Connection {
     private OutputStream oStream; // This stream blocks, because not really an issue.
 
     public byte[] lengthBuffer = new byte[4];
-    public char[] messageBuffer = new char[1024];
+    public char[] messageBuffer = new char[10240];
     public int lengthBytesRead = 0;
     public int bytesToRead = 0;
     public int bytesRead = 0;
@@ -39,6 +39,8 @@ public class Connection {
         // Check if a message is available.
         if(iByteStream.available() == 0) return -1;
 
+        System.out.println("Getting message");
+
         // get message length
         if(lengthBytesRead < 4) {
             int readIn = iByteStream.read(lengthBuffer, lengthBytesRead, 4 - lengthBytesRead);
@@ -49,9 +51,7 @@ public class Connection {
             }
         }
 
-        if(bytesToRead > 1024) {
-            // logic for killing the request and flushing the buffer?
-        }
+        System.out.println("message is " + String.valueOf(bytesToRead) + " bytes");
 
         if(bytesToRead > 0) {
             int readIn = iCharStream.read(messageBuffer, bytesRead, bytesToRead-bytesRead);

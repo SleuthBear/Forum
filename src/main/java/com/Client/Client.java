@@ -49,7 +49,7 @@ public class Client {
             roomNum = client.windowManager.getRoom();
         }
         client.windowManager.window.setTitle("Room " + roomNum);
-        client.startConnection("127.0.0.1", 3744);
+        client.startConnection("centerbeam.proxy.rlwy.net", 44320);
         client.con.sendMessage(String.valueOf(Integer.parseInt(roomNum)-1));
     }
 }
