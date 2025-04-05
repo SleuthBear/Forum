@@ -22,7 +22,7 @@ tasks.test {
 tasks.jar {
     manifest {
         attributes(
-            "Main-Class" to "com.Client.Client"
+            "Main-Class" to "com.Server.Server"
         )
     }
 
