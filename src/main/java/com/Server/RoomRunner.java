@@ -20,13 +20,15 @@ public class RoomRunner implements Runnable {
     @Override
     public void run() {
         while (true) {
-            if(clients.isEmpty()) {
-                try {
+            try {
+                if(clients.isEmpty()) {
                     // todo replace with fancy semaphore stuff
                     sleep(5000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                } else {
+                    sleep(250);
                 }
+            } catch (InterruptedException e){
+                    throw new RuntimeException(e);
             }
             synchronized (clients) {
                 Set<Connection> disconnected = new HashSet<>();
@@ -55,6 +57,7 @@ public class RoomRunner implements Runnable {
                     for (Connection otherClient : disconnected) {
                         try {
                             otherClient.close();
+                            System.out.println("Gracefully closed client connection.");
                         } catch (IOException e) {
                             System.out.println("Failed to gracefully close client.");
                         } finally {
