@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 import static java.lang.Thread.sleep;
 
 public class Server {
-    int nRooms = 7;
+    int nRooms = 3;
     ServerSocket serverSocket;
     private List<List<Connection>> rooms = new ArrayList<>();
     private ExecutorService pool = Executors.newFixedThreadPool(nRooms);

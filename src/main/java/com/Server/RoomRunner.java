@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.Thread.sleep;
+
 public class RoomRunner implements Runnable {
     final List<Connection> clients;
 
@@ -18,6 +20,14 @@ public class RoomRunner implements Runnable {
     @Override
     public void run() {
         while (true) {
+            if(clients.isEmpty()) {
+                try {
+                    // todo replace with fancy semaphore stuff
+                    sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             synchronized (clients) {
                 Set<Connection> disconnected = new HashSet<>();
                 for (Connection client : clients) {
