@@ -3,18 +3,23 @@ package com.Client;
 import com.Client.UI.WindowManager;
 import com.common.Connection;
 import java.io.*;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 
 public class Client {
     public Connection con;
     public WindowManager windowManager;
     public String username;
+    private static final String TRUSTSTORE_PATH = "client.truststore";
+    private static final String TRUSTSTORE_PASSWORD = "arCoaWQXNGEIQfZfKzQkCp8kxFkmekjdt7Wkg9TTqyG5w";
 
     Client() throws IOException {
         windowManager = new WindowManager(this);
     }
 
-    public void startConnection(String ip, int port) throws IOException {
-        con = new Connection(ip, port);
+    public void startConnection(String ip, int port) throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        con = new Connection(ip, port, TRUSTSTORE_PASSWORD, TRUSTSTORE_PATH);
         Thread messageThread = new Thread(() -> {
             try {
                 while(true) {
@@ -38,7 +43,7 @@ public class Client {
         System.exit(0);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
         System.setProperty( "apple.awt.application.appearance", "system" );
         Client client = new Client();
         client.username = client.windowManager.getUsername();

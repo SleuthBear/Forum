@@ -1,11 +1,12 @@
 package com.common;
 
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.security.*;
+import java.security.cert.CertificateException;
 
 import static com.Server.Server.cipherSuites;
 import static com.Server.Server.protocols;
@@ -25,52 +26,80 @@ public class Connection {
     // Server-side initializer
     public Connection(SSLServerSocket serverSocket) throws IOException {
         socket = (SSLSocket) serverSocket.accept();
+        socket.startHandshake();
+        socket.setSoTimeout(1);
         oStream = socket.getOutputStream();
         iByteStream = socket.getInputStream();
         iCharStream = new InputStreamReader(iByteStream, "UTF-8");
+        SSLSession session = socket.getSession();
+        System.out.println("TLS Handshake completed successfully");
+        System.out.println("Protocol: " + session.getProtocol());
+        System.out.println("Cipher Suite: " + session.getCipherSuite());
     }
 
     // Client-side initializer
-    public Connection(String ip, int port) throws IOException {
-        SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+    public Connection(String ip, int port, String trustStorePassword, String trustStorePath) throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        // Load the truststore (contains server's public certificate)
+        KeyStore trustStore = KeyStore.getInstance("JKS");
+        try (FileInputStream fis = new FileInputStream(trustStorePath)) {
+            trustStore.load(fis, trustStorePassword.toCharArray());
+        } catch (CertificateException | NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        // Create trust manager factory
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(trustStore);
+
+        // Create and initialize the SSL context
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, tmf.getTrustManagers(), new SecureRandom());
+
+        SSLSocketFactory socketFactory = sslContext.getSocketFactory();
         socket = (SSLSocket) socketFactory.createSocket(ip, port);
         socket.setEnabledProtocols(protocols);
         socket.setEnabledCipherSuites(cipherSuites);
         socket.startHandshake();
+        socket.setSoTimeout(1);
         oStream = socket.getOutputStream();
         iByteStream = socket.getInputStream();
         iCharStream = new InputStreamReader(iByteStream, "UTF-8");
+        SSLSession session = socket.getSession();
+        System.out.println("TLS Handshake completed successfully");
+        System.out.println("Protocol: " + session.getProtocol());
+        System.out.println("Cipher Suite: " + session.getCipherSuite());
+
     }
 
     public int getMessage() throws IOException {
-        // Check if a message is available.
-        if(iByteStream.available() == 0) return -1;
 
-        System.out.println("Getting message");
-
-        // get message length
-        if(lengthBytesRead < 4) {
-            int readIn = iByteStream.read(lengthBuffer, lengthBytesRead, 4 - lengthBytesRead);
-            if(readIn == -1) return -1; // no info read, back out.
-            lengthBytesRead += readIn;
-            if(lengthBytesRead == 4) {
-                bytesToRead = parseLengthBuffer();
+        try {
+            // get message length
+            if(lengthBytesRead < 4) {
+                int readIn = iByteStream.read(lengthBuffer, lengthBytesRead, 4 - lengthBytesRead);
+                if(readIn == -1) return -1; // no info read, back out.
+                lengthBytesRead += readIn;
+                if(lengthBytesRead == 4) {
+                    bytesToRead = parseLengthBuffer();
+                }
             }
+
+            System.out.println("message is " + String.valueOf(bytesToRead) + " bytes");
+
+            if(bytesToRead > 0) {
+                int readIn = iCharStream.read(messageBuffer, bytesRead, bytesToRead-bytesRead);
+                if(readIn == -1) return -1;
+
+                bytesToRead -= readIn;
+                bytesRead += readIn;
+                if(bytesToRead == 0) return 1;
+
+            }
+
+            return 0;
+        } catch (SocketTimeoutException e) {
+            // Didn't read anything.
+            return 0;
         }
-
-        System.out.println("message is " + String.valueOf(bytesToRead) + " bytes");
-
-        if(bytesToRead > 0) {
-            int readIn = iCharStream.read(messageBuffer, bytesRead, bytesToRead-bytesRead);
-            if(readIn == -1) return -1;
-
-            bytesToRead -= readIn;
-            bytesRead += readIn;
-            if(bytesToRead == 0) return 1;
-
-        }
-
-        return 0;
     }
 
 
@@ -90,6 +119,7 @@ public class Connection {
         lengthBytes[3] = (byte) (len & 0xFF);
         oStream.write(lengthBytes);
         oStream.write(msg.getBytes());
+        oStream.flush();
         System.out.println("msg sent\n");
     }
 

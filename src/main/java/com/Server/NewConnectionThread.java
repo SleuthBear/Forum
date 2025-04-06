@@ -2,6 +2,7 @@ package com.Server;
 
 import com.common.Connection;
 
+import javax.net.ssl.SSLServerSocket;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.SocketTimeoutException;
@@ -9,11 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NewConnectionThread extends Thread {
-    ServerSocket serverSocket;
+    SSLServerSocket serverSocket;
     final List<Connection> waitingRoom = new ArrayList<>();
     List<List<Connection>> rooms;
 
-    NewConnectionThread(ServerSocket _serverSocket, List<List<Connection>> _rooms) {
+    NewConnectionThread(SSLServerSocket _serverSocket, List<List<Connection>> _rooms) {
         serverSocket = _serverSocket;
         rooms = _rooms;
     }
@@ -60,9 +61,11 @@ public class NewConnectionThread extends Thread {
             // Try and register a new client
             try {
                 Connection client = new Connection(serverSocket);
+                System.out.println("Connected a client.");
                 synchronized (waitingRoom) {
                     waitingRoom.add(client);
                 }
+
 
                 if (waitingThread == null || !waitingThread.isAlive()) {
                     waitingThread = new Thread( () -> {
